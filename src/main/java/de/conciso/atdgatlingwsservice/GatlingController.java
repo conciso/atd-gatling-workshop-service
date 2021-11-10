@@ -21,7 +21,7 @@ public class GatlingController {
   @ResponseBody
   public int getRandomNumber() throws InterruptedException {
     long delay = (requestCount.incrementAndGet() > 5) ? DELAY_SECONDS.toMillis() : DELAY_WARMUP_SECONDS.toMillis();
-    Thread.sleep(DELAY_SECONDS.toMillis());
+    Thread.sleep(delay);
 
     return RANDOM.nextInt(UPPER_BOUND);
   }

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.5.6</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>de.conciso</groupId>
+	<artifactId>atd-gatling-ws-service</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>atd-gatling-ws-service</name>
+	<description>Demo service under load test for ATD21 Gatling workshop</description>
+
+	<properties>
+		<project.java.version>11</project.java.version>
+		<java.version>11</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<main.basedir>${project.basedir}</main.basedir>
+
+		<docker-maven-plugin.version>0.37.0</docker-maven-plugin.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>application-exec</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>io.fabric8</groupId>
+					<artifactId>docker-maven-plugin</artifactId>
+					<version>${docker-maven-plugin.version}</version>
+					<configuration>
+						<images>
+							<image>
+								<name>atd-gatling-ws-service:latest</name>
+								<build>
+									<from>openjdk:11-jre-slim</from>
+									<ports>
+										<port>80/tcp</port>
+										<port>8080/tcp</port>
+										<port>8787/tcp</port>
+									</ports>
+									<healthCheck>
+										<interval>1m</interval>
+										<timeout>1s</timeout>
+										<retries>3</retries>
+										<cmd>curl -f http://localhost:8081/health || exit 1</cmd>
+									</healthCheck>
+									<assembly>
+										<basedir>/app</basedir>
+										<inline>
+											<files>
+												<file>
+													<source>
+														${main.basedir}${file.separator}target${file.separator}application-exec.jar
+													</source>
+												</file>
+											</files>
+										</inline>
+									</assembly>
+									<entryPoint>
+										<shell>
+											java -jar /app/application-exec.jar
+										</shell>
+									</entryPoint>
+									<optimise>true</optimise>
+								</build>
+							</image>
+						</images>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>build</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>sources</id>
+							<goals>
+								<goal>source</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<executable>true</executable>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>build-info</goal>
+							</goals>
+							<configuration>
+								<additionalProperties>
+									<name>${project.name}</name>
+									<version>${project.version}</version>
+								</additionalProperties>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

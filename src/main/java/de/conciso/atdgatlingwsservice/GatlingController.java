@@ -14,13 +14,14 @@ public class GatlingController {
   private static final int UPPER_BOUND = 1337;
   private static final Duration DELAY_WARMUP_SECONDS = Duration.ofSeconds(3);
   private static final Duration DELAY_SECONDS = Duration.ofSeconds(1);
+  private static final int WARMUP_REQUEST_COUNT = 5;
 
   private AtomicInteger requestCount = new AtomicInteger();
 
   @GetMapping("/test")
   @ResponseBody
   public int getRandomNumber() throws InterruptedException {
-    long delay = (requestCount.incrementAndGet() > 5) ? DELAY_SECONDS.toMillis() : DELAY_WARMUP_SECONDS.toMillis();
+    long delay = (requestCount.incrementAndGet() > WARMUP_REQUEST_COUNT) ? DELAY_SECONDS.toMillis() : DELAY_WARMUP_SECONDS.toMillis();
     Thread.sleep(delay);
 
     return RANDOM.nextInt(UPPER_BOUND);
